@@ -4,11 +4,18 @@
 #include <signal.h>
 #include <string.h>
 #include <pthread.h>
+#include <fcntl.h>
 
 pthread_t receive_id;
 int receive_status;
 pthread_t keep_alive_id;
 int keep_alive_status;
+
+#define SAVE_VIDEO
+
+#ifdef SAVE_VIDEO
+#define FILENAME "video.h264"
+#endif
 
 static void sig_int(int arg)
 {
@@ -31,12 +38,35 @@ static void* receive_video_udp(void* arg)
     uint32_t frame_len;
     uint8_t frame_buf[FRAME_BUFSIZE];
 
+#ifdef SAVE_VIDEO
+    int fd = open (FILENAME, O_WRONLY | O_CREAT | O_TRUNC | O_APPEND, 0666);
+    if (fd == -1)
+    {
+        DEBUG_ERR("error: open\n");
+        exit(1);
+    }
+#endif
+
     while(!is_quit())
     {
         if(udp_recevie_stream(frame_buf, &frame_len))
             DEBUG_MSG("frame received size : %d\n", frame_len);
+
+#ifdef SAVE_VIDEO
+        if (write(fd
+                  , frame_buf
+                  , frame_len) == -1)
+        {
+            DEBUG_ERR("error: write\n");
+            exit(1);
+        }
+#endif
     }
 
+#ifdef SAVE_VIDEO
+    close(fd);
+#endif
+    
     pthread_exit((void *) 0);
 }
 
