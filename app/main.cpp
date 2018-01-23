@@ -1,5 +1,6 @@
 #include "../udp_setup/udp_setup.h"
 #include "../common_util/common_util.h"
+#include "../ffmpeg_setup/ffmpeg_setup.h"
 
 pthread_t receive_id;
 int receive_status;
@@ -43,10 +44,21 @@ static void* receive_video_udp(void* arg)
     }
 #endif
 
+    ffmpeg_decode_init();
+
     while(!is_quit())
     {
         if(udp_recevie_stream(frame_buf, &frame_len))
             DEBUG_MSG("frame received size : %d\n", frame_len);
+        
+        AVFrame picture;
+        if(ffmpeg_decode_start(frame_buf, frame_len, &picture))
+        {
+            DEBUG_MSG("YUV frame successfully decoded\n");
+            DEBUG_MSG("picture linesize 0 : %d\n", picture.linesize[0]);
+            DEBUG_MSG("picture linesize 1 : %d\n", picture.linesize[1]);
+            DEBUG_MSG("picture linesize 2 : %d\n", picture.linesize[2]);
+        }
 
 #ifdef SAVE_VIDEO
         if (write(fd
@@ -62,6 +74,8 @@ static void* receive_video_udp(void* arg)
 #ifdef SAVE_VIDEO
     close(fd);
 #endif
+
+    ffmpeg_decode_close();
     
     pthread_exit((void *) 0);
 }
