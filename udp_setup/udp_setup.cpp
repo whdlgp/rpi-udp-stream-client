@@ -6,11 +6,16 @@ static struct sockaddr_in server_addr;
 static struct sockaddr_in client_addr;
 static socklen_t server_addr_len;
 
-void udp_client_setup(const char* server_ip)
+void udp_set_server_ip(const char* server_ip)
+{
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr(server_ip);
+}
+
+void udp_client_command_setup()
 {
     client_command_socket = socket(AF_INET, SOCK_DGRAM, 0);
-    client_stream_socket = socket(AF_INET, SOCK_DGRAM, 0);
-
+    
     memset(&client_addr, 0, sizeof(client_addr));
     client_addr.sin_family = AF_INET;
     client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -22,7 +27,15 @@ void udp_client_setup(const char* server_ip)
         DEBUG_ERR("command socket bind error\n");
         exit(0);
     }
+}
 
+void udp_client_stream_setup()
+{
+    client_stream_socket = socket(AF_INET, SOCK_DGRAM, 0);
+
+    memset(&client_addr, 0, sizeof(client_addr));
+    client_addr.sin_family = AF_INET;
+    client_addr.sin_addr.s_addr = htonl(INADDR_ANY); 
     client_addr.sin_port = htons(CLIENT_STREAM_PORT);
     if(bind(client_stream_socket
             , (struct sockaddr*)&client_addr
@@ -31,15 +44,15 @@ void udp_client_setup(const char* server_ip)
         DEBUG_ERR("stream socket bind error\n");
         exit(0);
     }
-
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr(server_ip);
-    server_addr.sin_port = htons(SERVER_COMMAND_PORT);
 }
 
-void udp_client_close()
+void udp_client_command_close()
 {
     close(client_command_socket);
+}
+
+void udp_client_stream_close()
+{
     close(client_stream_socket);
 }
 
