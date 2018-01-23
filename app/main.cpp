@@ -1,11 +1,6 @@
 #include "../udp_setup/udp_setup.h"
 #include "../common_util/common_util.h"
 
-#include <signal.h>
-#include <string.h>
-#include <pthread.h>
-#include <fcntl.h>
-
 pthread_t receive_id;
 int receive_status;
 pthread_t keep_alive_id;
@@ -24,7 +19,8 @@ static void sig_int(int arg)
 
     set_quit();
     DEBUG_MSG("close and exit client\n");
-    udp_client_close();
+    udp_client_command_close();
+    udp_client_stream_close();
     
     DEBUG_MSG("wait until thread join\n");
     pthread_join(receive_id, (void **)&receive_status);
@@ -94,7 +90,9 @@ int main(int argc, char* argv[])
     signal(SIGTERM, sig_int);
     signal(SIGQUIT, sig_int);
     
-    udp_client_setup(argv[1]);
+    udp_set_server_ip(argv[1]);
+    udp_client_command_setup();
+    udp_client_stream_setup();
         
     char user_input[128];
 
@@ -125,7 +123,8 @@ int main(int argc, char* argv[])
 
                 set_quit();
                 DEBUG_MSG("close and exit client\n");
-                udp_client_close();
+                udp_client_command_close();
+                udp_client_stream_close();
                 
                 DEBUG_MSG("wait until thread join\n");
                 pthread_join(receive_id, (void **)&receive_status);

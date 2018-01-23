@@ -8,5 +8,13 @@
 #define DEBUG_MSG(...)
 #endif
 
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
+#include <pthread.h>
+#include <fcntl.h>
+#include <string>
+#include <iostream>
+
 void set_quit();
 int is_quit();
