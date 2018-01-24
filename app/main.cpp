@@ -2,6 +2,9 @@
 #include "../common_util/common_util.h"
 #include "../ffmpeg_setup/ffmpeg_setup.h"
 
+#include "opencv2/opencv.hpp"
+using namespace cv;
+
 pthread_t receive_id;
 int receive_status;
 pthread_t keep_alive_id;
@@ -30,6 +33,43 @@ static void sig_int(int arg)
     exit(0);
 }
 
+void avframe_mat_conversion(const AVFrame * frame, Mat& image)
+{
+    int width = frame->width;
+    int height = frame->height;
+ 
+    // Allocate the opencv mat and store its stride in a 1-element array
+    if (image.rows != height 
+            || image.cols != width 
+            || image.type() != CV_8UC3)
+    {
+        image = Mat(height, width, CV_8UC3);
+    }
+    
+    int cvLinesizes[1];
+    cvLinesizes[0] = image.step1();
+ 
+    // Convert the colour format and write directly to the opencv matrix
+    SwsContext* conversion = sws_getContext(width
+                                            , height
+                                            , (AVPixelFormat) frame->format
+                                            , width
+                                            , height
+                                            , PIX_FMT_BGR24
+                                            , SWS_FAST_BILINEAR
+                                            , NULL, NULL, NULL);
+    
+    sws_scale(conversion
+              , frame->data
+              , frame->linesize
+              , 0
+              , height
+              , &image.data
+              , cvLinesizes);
+
+    sws_freeContext(conversion);
+}
+
 static void* receive_video_udp(void* arg)
 {
     uint32_t frame_len;
@@ -46,6 +86,8 @@ static void* receive_video_udp(void* arg)
 
     ffmpeg_decode_init();
 
+    Mat converted_image;
+
     while(!is_quit())
     {
         if(udp_recevie_stream(frame_buf, &frame_len))
@@ -55,9 +97,13 @@ static void* receive_video_udp(void* arg)
         if(ffmpeg_decode_start(frame_buf, frame_len, &picture))
         {
             DEBUG_MSG("YUV frame successfully decoded\n");
-            DEBUG_MSG("picture linesize 0 : %d\n", picture.linesize[0]);
-            DEBUG_MSG("picture linesize 1 : %d\n", picture.linesize[1]);
-            DEBUG_MSG("picture linesize 2 : %d\n", picture.linesize[2]);
+            //DEBUG_MSG("picture linesize 0 : %d\n", picture.linesize[0]);
+            //DEBUG_MSG("picture linesize 1 : %d\n", picture.linesize[1]);
+            //DEBUG_MSG("picture linesize 2 : %d\n", picture.linesize[2]);
+
+            avframe_mat_conversion(&picture, converted_image);
+            imshow("convert", converted_image);
+            waitKey(1);
         }
 
 #ifdef SAVE_VIDEO
