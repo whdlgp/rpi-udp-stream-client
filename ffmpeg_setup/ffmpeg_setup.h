@@ -1,3 +1,6 @@
+#ifndef FFMPEG_SETUP_H
+#define FFMPEG_SETUP_H
+
 extern "C" {
 //FFmpeg include
 #include "libavutil/imgutils.h"
@@ -12,3 +15,5 @@ extern "C" {
 int ffmpeg_decode_init();
 int ffmpeg_decode_close();
 int ffmpeg_decode_start(unsigned char* frame, int frame_len, AVFrame* dst);
+
+#endif
