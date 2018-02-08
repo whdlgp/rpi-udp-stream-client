@@ -1,6 +1,7 @@
 #include "../udp_setup/udp_setup.h"
 #include "../common_util/common_util.h"
 #include "../ffmpeg_setup/ffmpeg_setup.h"
+#include "imshow_queue.h"
 
 #include "opencv2/opencv.hpp"
 using namespace cv;
@@ -87,6 +88,7 @@ static void* receive_video_udp(void* arg)
     ffmpeg_decode_init();
 
     Mat converted_image;
+    imshow_init();
 
     while(!is_quit())
     {
@@ -102,8 +104,7 @@ static void* receive_video_udp(void* arg)
             //DEBUG_MSG("picture linesize 2 : %d\n", picture.linesize[2]);
 
             avframe_mat_conversion(&picture, converted_image);
-            imshow("convert", converted_image);
-            waitKey(1);
+            imshow_request("convert", converted_image);
         }
 
 #ifdef SAVE_VIDEO
@@ -120,6 +121,8 @@ static void* receive_video_udp(void* arg)
 #ifdef SAVE_VIDEO
     close(fd);
 #endif
+
+    imshow_close();
 
     ffmpeg_decode_close();
     
