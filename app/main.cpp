@@ -2,6 +2,7 @@
 #include "../common_util/common_util.h"
 #include "../ffmpeg_setup/ffmpeg_setup.h"
 #include "imshow_queue.h"
+#include "color_object_recognition.h"
 
 #include "opencv2/opencv.hpp"
 using namespace cv;
@@ -104,6 +105,21 @@ static void* receive_video_udp(void* arg)
             //DEBUG_MSG("picture linesize 2 : %d\n", picture.linesize[2]);
 
             avframe_mat_conversion(&picture, converted_image);
+
+            color_object_t red_obj;
+            color_object_t green_obj;
+            color_object_t blue_obj;
+            find_red_object(converted_image, &red_obj);
+            find_green_object(converted_image, &green_obj);
+            find_blue_object(converted_image, &blue_obj);
+
+            if(red_obj.is_recognized)
+                imshow_request("red_obj", red_obj.thresholded_image);
+            if(green_obj.is_recognized)
+                imshow_request("green_obj", green_obj.thresholded_image);
+            if(blue_obj.is_recognized)
+                imshow_request("blue_obj", blue_obj.thresholded_image);
+            
             imshow_request("convert", converted_image);
         }
 
