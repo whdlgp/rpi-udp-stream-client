@@ -1,8 +1,8 @@
 #include "../udp_setup/udp_setup.h"
 #include "../common_util/common_util.h"
 #include "../ffmpeg_setup/ffmpeg_setup.h"
-#include "imshow_queue.h"
-#include "color_object_recognition.h"
+#include "../computer_vision/imshow_queue.h"
+#include "../computer_vision/color_object_recognition.h"
 
 #include "opencv2/opencv.hpp"
 using namespace cv;

@@ -5,6 +5,7 @@ aux_source_directory( "./common_util" SRCS )
 aux_source_directory( "./app" SRCS )
 aux_source_directory( "./udp_setup" SRCS )
 aux_source_directory( "./ffmpeg_setup" SRCS )
+aux_source_directory( "./computer_vision" SRCS )
 
 add_executable( ${CMAKE_PROJECT_NAME} ${SRCS} )
 
