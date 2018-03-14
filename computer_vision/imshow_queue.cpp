@@ -31,24 +31,24 @@ static void* imshow_thread(void* arg)
         }
         usleep(1000);
     }
+    DEBUG_MSG("imshow_thread ended\n");
     pthread_exit((void *) 0);
 }
 
 void imshow_init()
 {
+    imshow_kill = 0;
     pthread_create(&imshow_id
                    , NULL
                    , imshow_thread
                    , (void*)NULL);
     DEBUG_MSG("imshow thread created\n");
+    pthread_detach(imshow_id);
 }
 
 void imshow_close()
 {
     imshow_kill = 1;
-    int status;
-    pthread_join(imshow_id, (void**)&status);
-    imshow_kill = 0;
 }
 
 void imshow_request(std::string name, cv::Mat image)
