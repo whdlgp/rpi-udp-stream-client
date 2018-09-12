@@ -64,7 +64,8 @@ void get_optical_flow(cv::Mat input_frame, opt_flow_t* out)
         for(int j = 0; j < status.size(); j++)
         {
             //find valid point and check it's circle point symmetry
-            if(status[j] && status[status.size()-1-j])
+            //if(status[j] && status[status.size()-1-j])
+            if(status[j])
             {
                 //calculate displacement
                 disp_x.push_back(found[j].x - track[j].x);
