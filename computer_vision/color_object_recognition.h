@@ -28,6 +28,8 @@ typedef struct color_object_t
     int is_recognized;
 } color_object_t;
 
+void color_object_init();
+
 void find_red_object(cv::Mat origin_image, color_object_t* output);
 void find_green_object(cv::Mat origin_image, color_object_t* output);
 void find_blue_object(cv::Mat origin_image, color_object_t* output);
