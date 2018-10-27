@@ -78,8 +78,8 @@ void find_red_object(cv::Mat origin_image, color_object_t* output)
     cvtColor(origin_image, hsv_image, COLOR_BGR2HSV);
 
     Mat gray1, gray2;
-    inRange(origin_image, Scalar(0, red.low_s, red.low_v), Scalar(red.low_h, red.high_s, red.high_v), gray1);
-    inRange(origin_image, Scalar(red.high_h, red.low_s, red.low_v), Scalar(179, red.high_s, red.high_v), gray2);
+    inRange(hsv_image, Scalar(0, red.low_s, red.low_v), Scalar(red.low_h, red.high_s, red.high_v), gray1);
+    inRange(hsv_image, Scalar(red.high_h, red.low_s, red.low_v), Scalar(179, red.high_s, red.high_v), gray2);
     output->thresholded_image = gray1 | gray2;
 
     //morphological opening (removes small objects from the foreground)
@@ -89,10 +89,6 @@ void find_red_object(cv::Mat origin_image, color_object_t* output)
     //morphological closing (removes small holes from the foreground)
     dilate(output->thresholded_image, output->thresholded_image, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
     erode(output->thresholded_image, output->thresholded_image, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-    
-    //blurring
-    blur(output->thresholded_image, output->thresholded_image, Size(3, 3));
-    Canny(output->thresholded_image, output->thresholded_image, 80, 240, 3);
 
     //Calculate the moments of the thresholded image
     Moments oMoments = moments(output->thresholded_image);
@@ -127,7 +123,7 @@ void find_green_object(cv::Mat origin_image, color_object_t* output)
     cvtColor(image_tmp, hsv_image, COLOR_BGR2HSV);
 
     inRange(hsv_image, Scalar(green.low_h, green.low_s, green.low_v)
-            , Scalar(green.high_h, green.high_s, green.high_s)
+            , Scalar(green.high_h, green.high_s, green.high_v)
             , output->thresholded_image);
 
     //morphological opening (removes small objects from the foreground)
@@ -136,11 +132,7 @@ void find_green_object(cv::Mat origin_image, color_object_t* output)
 
     //morphological closing (removes small holes from the foreground)
     dilate(output->thresholded_image, output->thresholded_image, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
-    erode(output->thresholded_image, output->thresholded_image, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-
-    //blurring
-    blur(output->thresholded_image, output->thresholded_image, Size(3, 3));
-    Canny(output->thresholded_image, output->thresholded_image, 80, 240, 3);
+    erode(output->thresholded_image, output->thresholded_image, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );\
 
     //Calculate the moments of the thresholded image
     Moments oMoments = moments(output->thresholded_image);
@@ -175,7 +167,7 @@ void find_blue_object(cv::Mat origin_image, color_object_t* output)
     cvtColor(image_tmp, hsv_image, COLOR_BGR2HSV);
 
     inRange(hsv_image, Scalar(blue.low_h, blue.low_s, blue.low_v)
-            , Scalar(blue.high_h, blue.high_s, blue.high_s)
+            , Scalar(blue.high_h, blue.high_s, blue.high_v)
             , output->thresholded_image);
 
     //morphological opening (removes small objects from the foreground)
@@ -185,10 +177,6 @@ void find_blue_object(cv::Mat origin_image, color_object_t* output)
     //morphological closing (removes small holes from the foreground)
     dilate(output->thresholded_image, output->thresholded_image, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
     erode(output->thresholded_image, output->thresholded_image, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-
-    //blurring
-    blur(output->thresholded_image, output->thresholded_image, Size(3, 3));
-    Canny(output->thresholded_image, output->thresholded_image, 80, 240, 3);
     
     //Calculate the moments of the thresholded image
     Moments oMoments = moments(output->thresholded_image);

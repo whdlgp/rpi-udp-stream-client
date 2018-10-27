@@ -1,5 +1,15 @@
 #include "shape_object_recognition.h"
 
+static int edge_approx_tmp = 40;
+static double edge_approx = 0.04;
+
+void shape_init()
+{
+    //red
+    cvNamedWindow("edge_approx", 1 );
+    cvCreateTrackbar("edge_approx", "edge_approx", &edge_approx_tmp, 1000);
+}
+
 void draw_label(cv::Mat& out, int type, cv::Point position)
 {
     int fontface = cv::FONT_HERSHEY_SIMPLEX;
@@ -12,19 +22,11 @@ void draw_label(cv::Mat& out, int type, cv::Point position)
     switch(type)
     {
         case SHAPE_TRI:
-        label = "CIRCLE";
+        label = "TRI";
         break;
 
         case SHAPE_RECT:
         label = "RECT";
-        break;
-
-        case SHAPE_PENTA:
-        label = "PENTA";
-        break;
-
-        case SHAPE_HEXA:
-        label = "HEXA";
         break;
 
         case SHAPE_CIRCLE:
@@ -47,16 +49,23 @@ void draw_label(cv::Mat& out, int type, cv::Point position)
 
 void check_shape(cv::Mat origin_image, shape_object_t* output)
 {
+    //blurring
+    cv::Mat blur, edge;
+    cv::blur(origin_image, blur, cv::Size(3, 3));
+    cv::Canny(blur, edge, 80, 240, 3);
+    edge.copyTo(output->thresholded_image);
+
     //find contour, detect shape and position
 	std::vector<std::vector<cv::Point> > contours;
     std::vector<cv::Point> approx;
-    cv::findContours(origin_image, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    cv::findContours(edge, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
     output->detected_num = contours.size();
 
     for (int i = 0; i < contours.size(); i++)
     {
-        cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.03, true);
+        edge_approx = (edge_approx_tmp*1.0)/1000.0;
+        cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*edge_approx, true);
 
         if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
         {
@@ -79,14 +88,6 @@ void check_shape(cv::Mat origin_image, shape_object_t* output)
 
                 case 4: //rectangle
                 output->type.push_back(SHAPE_RECT);
-                break;
-
-                case 5: //penta
-                output->type.push_back(SHAPE_PENTA);
-                break;
-
-                case 6: //hexa
-                output->type.push_back(SHAPE_HEXA);
                 break;
 
                 default: //circle
