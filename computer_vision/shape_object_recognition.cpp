@@ -62,12 +62,12 @@ void check_shape(cv::Mat origin_image, shape_object_t* output)
 
     output->detected_num = contours.size();
 
-    for (int i = 0; i < contours.size(); i++)
+    for(int i = 0; i < contours.size(); i++)
     {
         edge_approx = (edge_approx_tmp*1.0)/1000.0;
         cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*edge_approx, true);
 
-        if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
+        if(std::fabs(cv::contourArea(contours[i])) < 4000 || !cv::isContourConvex(approx))
         {
             output->detected_num--;
             continue;
